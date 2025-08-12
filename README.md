@@ -19,8 +19,8 @@ ConfigGenConveyorBelt/
 │   └── example-data.csv
 ├── template/                   # Jinja2 template files
 │   └── example-jinja.j2
-├── scripts-src/               # Main Python scripts
-│   └── nbpconfigs.py         # Core configuration generator
+├── src/                       # Main Python scripts
+│   └── config-gen.py         # Core configuration generator
 ├── _output/                   # Generated configuration files
 ├── requirements.txt           # Python dependencies
 └── README.md                 # This file
@@ -75,7 +75,7 @@ pip install -r requirements.txt
 ### 4. Verify Installation
 
 ```bash
-python scripts-src/nbpconfigs.py --help
+python src/config-gen.py
 ```
 
 ## 🏃‍♂️ Quick Start
@@ -101,8 +101,7 @@ python scripts-src/nbpconfigs.py --help
 
 3. **Run the generator**:
    ```bash
-   cd scripts-src
-   python nbpconfigs.py
+   python src/config-gen.py
    ```
 
 4. **Check output**: Generated configurations will be in the `_output` directory
@@ -111,13 +110,13 @@ python scripts-src/nbpconfigs.py --help
 
 #### Custom Template and Data Files
 
-Modify the configuration in `nbpconfigs.py`:
+Modify the configuration in `config-gen.py`:
 
 ```python
 def main():
-    template_file = "your-template.j2"      # Your Jinja2 template
-    csv_file = "your-data.csv"              # Your CSV data file
-    output_directory = "custom_output"       # Custom output directory
+    template_file = "./template/your-template.j2"      # Your Jinja2 template
+    csv_file = "./data/your-data.csv"                  # Your CSV data file
+    output_directory = "custom_output"                 # Custom output directory
     
     generate_configurations(
         template_file=template_file,
@@ -172,13 +171,13 @@ config_parameters = read_csv_to_dict(csv_file, delimiter="\t")
 
 3. **Update script configuration**:
    ```python
-   template_file = "router-base.j2"
-   csv_file = "../data/routers.csv"
+   template_file = "./template/router-base.j2"
+   csv_file = "./data/routers.csv"
    ```
 
 4. **Execute**:
    ```bash
-   python scripts-src/nbpconfigs.py
+   python src/config-gen.py
    ```
 
 5. **Result**: Three configuration files created:
@@ -198,13 +197,13 @@ pip install black flake8 mypy
 
 ```bash
 # Format code
-black scripts-src/
+black src/
 
 # Lint code
-flake8 scripts-src/
+flake8 src/
 
 # Type checking
-mypy scripts-src/
+mypy src/
 ```
 
 ## 📚 CSV File Format
