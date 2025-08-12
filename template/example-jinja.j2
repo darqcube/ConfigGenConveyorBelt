@@ -1,0 +1,142 @@
+
+#
+ sysname {{ code }}-{{ hostname }}
+#
+ drop illegal-mac alarm
+#
+router id {{ loopback }}
+#
+ip pool global
+ gateway-list {{ lan_ip }}
+ network {{ dhcp_net }} mask 255.255.255.0 
+ excluded-ip-address {{ dhcp_exclude }}.2 {{ dhcp_exclude }}.50 
+ dns-list 10.1.0.32 10.1.0.33 
+ domain-name nbp.com.pk
+#                                         
+interface Dialer1
+ link-protocol ppp
+ ppp chap user {{ dialer1_user }}
+ ppp chap password simple {{ dialer1_pw }}
+ ppp pap local-user {{ dialer1_user }} password simple {{ dialer1_pw }}
+ ip address ppp-negotiate
+ dialer user server
+ dialer bundle 1
+ dialer-group 1
+#
+interface Vlanif1
+ ip address 192.168.1.1 255.255.255.0
+ dhcp select interface
+#
+interface GigabitEthernet0/0/0
+#
+interface GigabitEthernet0/0/1            
+ undo portswitch
+ description LAN
+ ip address {{ lan_ip }} 255.255.255.0
+ undo negotiation auto
+ dhcp select global
+#
+interface GigabitEthernet0/0/2
+#
+interface GigabitEthernet0/0/3
+ undo portswitch
+ pppoe-client dial-bundle-number 1 
+ description WAN DSL1 Link
+#
+interface GigabitEthernet0/0/4
+ description WAN Fiber/LTE/DRS Link
+ ip address {{ pri_link }} 255.255.255.252
+#
+interface GigabitEthernet0/0/5
+ description VirtualPort
+#
+interface LoopBack0
+ ip address {{ loopback }} 255.255.255.255
+#
+interface Tunnel0/0/1
+ mtu 1400
+ description Connected to CR-1
+ tcp adjust-mss 1360
+ ip address {{ t1_ip }} 255.255.0.0
+ tunnel-protocol gre p2mp
+ source Dialer1
+ gre key cipher %^%#I.6DSDTvB0*9Nf%N<Hu*d#gO2c>yDLhg*uR)(mE*%^%#
+ ipsec profile strong
+ nhrp entry 10.201.0.1 192.168.5.34 register
+#
+interface Tunnel0/0/2
+ mtu 1400
+ description Connected to CR-2
+ tcp adjust-mss 1360
+ ip address {{ t2_ip }} 255.255.0.0
+ tunnel-protocol gre p2mp
+ source GigabitEthernet0/0/4
+ gre key cipher %^%#VnB2#Wh<EY#B&^Fzrl1-^vo(-efv=O"8k^"PF*NP%^%#
+ ipsec profile strong
+ nhrp entry 10.202.0.1 192.168.5.38 register
+#
+interface Tunnel0/0/3
+ mtu 1400
+ description Connected to CR-3
+ tcp adjust-mss 1360
+ ip address {{ t3_ip }} 255.255.0.0
+ tunnel-protocol gre p2mp
+ source GigabitEthernet0/0/4
+ gre key cipher %^%#,Ua]Ca9W#<R/JkHopwyPOpet87Dp_Pp8HZ:0lup"%^%#
+ ipsec profile strong
+ nhrp entry 10.203.0.1 192.168.5.50 register
+#
+interface Tunnel0/0/4
+ mtu 1400
+ description Connected to DR-1
+ tcp adjust-mss 1360
+ ip address {{ t4_ip }} 255.255.0.0
+ tunnel-protocol gre p2mp
+ source Dialer1
+ gre key cipher %^%##i3F7~3i:(8,BU>r*4ORFxQUS5)[R~^~f0Q+rnaX%^%#
+ ipsec profile strong
+ nhrp entry 10.204.0.1 192.168.5.42 register
+#
+bgp 65505
+ router-id {{ loopback }}
+ peer 10.201.0.1 as-number 65501
+ peer 10.201.0.1 bfd min-tx-interval 100 min-rx-interval 100 detect-multiplier 4
+ peer 10.201.0.1 bfd enable
+ peer 10.202.0.1 as-number 65502
+ peer 10.202.0.1 bfd min-tx-interval 100 min-rx-interval 100 detect-multiplier 4
+ peer 10.202.0.1 bfd enable
+ peer 10.203.0.1 as-number 65503
+ peer 10.203.0.1 bfd min-tx-interval 100 min-rx-interval 100 detect-multiplier 4
+ peer 10.203.0.1 bfd enable
+ peer 10.204.0.1 as-number 65504
+ peer 10.204.0.1 bfd min-tx-interval 100 min-rx-interval 100 detect-multiplier 4
+ peer 10.204.0.1 bfd enable
+ #
+ ipv4-family unicast
+  undo synchronization
+  compare-different-as-med
+  bestroute as-path-ignore
+  network {{ dhcp_net }} 255.255.255.0 route-policy CENTRALCOM
+  network {{ loopback }} 255.255.255.255 route-policy CENTRALCOM
+  peer 10.201.0.1 enable
+  peer 10.201.0.1 advertise-community
+  peer 10.201.0.1 preferred-value 200
+  peer 10.202.0.1 enable
+  peer 10.202.0.1 advertise-community     
+  peer 10.202.0.1 preferred-value 400
+  peer 10.203.0.1 enable
+  peer 10.203.0.1 advertise-community
+  peer 10.203.0.1 preferred-value 300
+  peer 10.204.0.1 enable
+  peer 10.204.0.1 advertise-community
+  peer 10.204.0.1 preferred-value 100
+#
+route-policy CENTRALCOM permit node 10
+ apply community 65505:12
+#
+ip route-static 192.168.5.34 255.255.255.255 Dialer1 preference 1
+ip route-static 192.168.5.38 255.255.255.255 {{ next_hop_ip }} preference 1
+ip route-static 192.168.5.42 255.255.255.255 Dialer1 preference 1
+ip route-static 192.168.5.50 255.255.255.255 {{ next_hop_ip }} preference 1
+#
+return
