@@ -9,7 +9,6 @@ A streamlined Python-based configuration generator that transforms CSV data into
 - **CSV-to-Config Pipeline**: Convert CSV parameter files into device configurations
 - **Jinja2 Template Engine**: Flexible templating for various network device types
 - **Batch Processing**: Generate multiple configurations in one run
-- **Regional Support**: Organized templates and data for different regions (Central, North, South)
 - **Error Handling**: Robust error handling with detailed feedback
 - **Type Safety**: Modern Python with type hints for better code reliability
 
