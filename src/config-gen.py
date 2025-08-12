@@ -19,7 +19,7 @@ router02;192.168.1.2;eth0
 EXAMPLE TEMPLATE FORMAT:
 hostname {{ hostname }}
 interface {{ interface }}
- ip address {{ ip_address }}
+ip address {{ ip_address }}
 
 Author: Salman Khan, Chief Infrastructure & Security Architect
 License: MIT
